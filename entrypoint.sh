@@ -14,12 +14,22 @@ if test -z "${pod}"; then
     exit 1
 fi
 
+echo "cleaning up existing backup files"
+kubectl exec -i "${pod}" -- bash -c "rm /backup/*"
+
 echo "exporting backup from influxdb"
-kubectl exec -it "${pod}" -- influx backup -b waggle /backup
+kubectl exec -i "${pod}" -- influx backup -b waggle /backup
 
 echo "moving files from ${pod}:/backup/ to /backup"
-kubectl cp "${pod}:/backup/" "$PWD/beehive-influxdb-backup"
-kubectl exec -it "${pod}" -- bash -c "rm /backup/*"
+kubectl cp "${pod}:/backup/" "/backup/"
+kubectl exec -i "${pod}" -- bash -c "rm /backup/*"
+
+timestamp_for_backup() {
+    path=$(find "${1}" -name '*.manifest')
+    echo $(basename "${path}" | sed s/.manifest//)
+}
+
+timestamp=$(timestamp_for_backup /backup)
 
 echo "rsyncing files to remote"
 rsync \
@@ -28,4 +38,6 @@ rsync \
     --remove-source-files \
     -e "ssh -i ${UPLOAD_KEY} -o StrictHostKeyChecking=no" \
     /backup/ \
-    "${UPLOAD_USER}@${UPLOAD_ADDR}:${UPLOAD_DIR}/"
+    "${UPLOAD_USER}@${UPLOAD_ADDR}:${UPLOAD_DIR}/${timestamp}/"
+
+echo "done"

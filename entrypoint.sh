@@ -6,7 +6,8 @@ echo "UPLOAD_USER=${UPLOAD_USER}"
 echo "UPLOAD_KEY=${UPLOAD_KEY}"
 echo "UPLOAD_DIR=${UPLOAD_DIR}"
 
-pod=$(kubectl -n shared get pod | awk '/beehive-influxdb/ {print $1}')
+# get first pod for beehive-influxdb deployment
+pod=$(kubectl get pod -l app=beehive-influxdb | awk '/beehive-influxdb/ {print $1; exit}')
 
 if test -z "${pod}"; then
     echo "influxdb pod not found"

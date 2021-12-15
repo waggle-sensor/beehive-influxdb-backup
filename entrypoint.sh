@@ -1,4 +1,4 @@
-#!/bin/bash -e -u
+#!/bin/bash -eu
 
 echo "running with config"
 echo "UPLOAD_ADDR=${UPLOAD_ADDR}"

@@ -1,4 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e -u
+
+echo "running with config"
+echo "UPLOAD_ADDR=${UPLOAD_ADDR}"
+echo "UPLOAD_USER=${UPLOAD_USER}"
+echo "UPLOAD_KEY=${UPLOAD_KEY}"
+echo "UPLOAD_DIR=${UPLOAD_DIR}"
 
 pod=$(kubectl -n shared get pod | awk '/beehive-influxdb/ {print $1}')
 
@@ -19,5 +25,6 @@ rsync \
     --verbose \
     --archive \
     --remove-source-files \
-    /root/beehive-influxdb-backup/ \
-    svcwagglersync:/lcrc/project/waggle/backups/beehive-influxdb
+    -e "ssh -i ${UPLOAD_KEY} -o StrictHostKeyChecking=no" \
+    /backup/ \
+    "${UPLOAD_USER}@${UPLOAD_ADDR}:${UPLOAD_DIR}/"

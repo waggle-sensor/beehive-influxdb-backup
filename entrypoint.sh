@@ -15,14 +15,14 @@ if test -z "${pod}"; then
 fi
 
 echo "cleaning up existing backup files"
-kubectl exec -i "${pod}" -- bash -c "rm -rf /backup"
+kubectl exec -i "${pod}" -- bash -c 'rm -rf /backup/*'
 
 echo "exporting backup from influxdb"
 kubectl exec -i "${pod}" -- influx backup -b waggle /backup
 
 echo "moving files from ${pod}:/backup/ to /backup"
 kubectl cp "${pod}:/backup/" "/backup/"
-kubectl exec -i "${pod}" -- bash -c "rm -rf /backup"
+kubectl exec -i "${pod}" -- bash -c 'rm -rf /backup/*'
 
 timestamp_for_backup() {
     path=$(find "${1}" -name '*.manifest')
